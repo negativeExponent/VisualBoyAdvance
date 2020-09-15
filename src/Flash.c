@@ -99,7 +99,7 @@ void flashReadGame(gzFile gzFile, int version)
 
 void flashSetSize(int size)
 {
-  //  log("Setting flash size to %d\n", size);
+  //  systemLog("Setting flash size to %d\n", size);
   if(size == 0x10000) {
     flashDeviceID = 0x1b;
     flashManufacturerID = 0x32;
@@ -116,8 +116,8 @@ void flashSetSize(int size)
 
 u8 flashRead(u32 address)
 {
-  //  log("Reading %08x from %08x\n", address, reg[15].I);
-  //  log("Current read state is %d\n", flashReadState);
+  //  systemLog("Reading %08x from %08x\n", address, reg[15].I);
+  //  systemLog("Current read state is %d\n", flashReadState);
   address &= 0xFFFF;
 
   switch(flashReadState) {
@@ -143,7 +143,7 @@ u8 flashRead(u32 address)
 
 void flashSaveDecide(u32 address, u8 byte)
 {
-  //  log("Deciding save type %08x\n", address);
+  //  systemLog("Deciding save type %08x\n", address);
   if(address == 0x0e005555) {
     saveType = 2;
     cpuSaveGameFunc = flashWrite;
@@ -164,8 +164,8 @@ void flashDelayedWrite(u32 address, u8 byte)
 
 void flashWrite(u32 address, u8 byte)
 {
-  //  log("Writing %02x at %08x\n", byte, address);
-  //  log("Current state is %d\n", flashState);
+  //  systemLog("Writing %02x at %08x\n", byte, address);
+  //  systemLog("Current state is %d\n", flashState);
   address &= 0xFFFF;
   switch(flashState) {
   case FLASH_READ_ARRAY:

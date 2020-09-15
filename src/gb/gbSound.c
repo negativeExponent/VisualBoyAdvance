@@ -143,7 +143,7 @@ void gbSoundEvent(register u16 address, register int data)
 #ifndef FINAL_VERSION
   if(soundDebug) {
     // don't translate. debug only
-    log("Sound event: %08lx %02x\n", address, data);
+    systemLog("Sound event: %08lx %02x\n", address, data);
   }
 #endif
   switch(address) {
@@ -825,7 +825,7 @@ void gbSoundReset()
 
   // don't translate
   if(soundDebug) {
-    log("*** Sound Init ***\n");
+    systemLog("*** Sound Init ***\n");
   }
   
   gbSoundEvent(0xff10, 0x80);
@@ -855,7 +855,7 @@ void gbSoundReset()
 
   // don't translate
   if(soundDebug) {
-    log("*** Sound Init Complete ***\n");
+    systemLog("*** Sound Init Complete ***\n");
   }
   
   sound1On = 0;

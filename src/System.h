@@ -79,7 +79,8 @@ struct EmulatedSystem {
 };
 
 extern void logg(const char *,...);
-#define log logg
+//#define log logg
+#define systemLog (...)
 
 extern bool systemPauseOnFrame();
 extern void systemGbPrint(u8 *,int,int,int,int);

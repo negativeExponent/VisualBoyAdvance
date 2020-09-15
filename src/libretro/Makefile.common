@@ -1,0 +1,37 @@
+SOURCES_C   :=
+SOURCES_CXX :=
+LIBRETRO_COMMON := $(CORE_DIR)/src/libretro/libretro-common
+INCFLAGS        := -I$(CORE_DIR) -I$(CORE_DIR)/src -I$(LIBRETRO_COMMON)/include
+VBA_DEFINES     := -D__LIBRETRO__ -DFINAL_VERSION -DC_CORE -DNO_DEBUGGER
+
+ifeq ($(TILED_RENDERING), 1)
+VBA_DEFINES += -DTILED_RENDERING
+endif
+
+ifeq ($(FRONTEND_SUPPORTS_RGB565),1)
+VBA_DEFINES += -DFRONTEND_SUPPORTS_RGB565
+endif
+
+ifeq ($(NO_LINK),1)
+VBA_DEFINES += -DNO_LINK
+endif
+
+SOURCES_C += \
+   $(CORE_DIR)/src/CheatSearch.c \
+   $(CORE_DIR)/src/Cheats.c \
+   $(CORE_DIR)/src/EEprom.c \
+   $(CORE_DIR)/src/Flash.c \
+   $(CORE_DIR)/src/GBA.c \
+   $(CORE_DIR)/src/Gfx.c \
+   $(CORE_DIR)/src/Globals.c \
+   $(CORE_DIR)/src/Mode0.c \
+   $(CORE_DIR)/src/Mode1.c \
+   $(CORE_DIR)/src/Mode2.c \
+   $(CORE_DIR)/src/Mode3.c \
+   $(CORE_DIR)/src/Mode4.c \
+   $(CORE_DIR)/src/Mode5.c \
+   $(CORE_DIR)/src/RTC.c \
+   $(CORE_DIR)/src/Sound.c \
+   $(CORE_DIR)/src/Sram.c \
+   $(CORE_DIR)/src/bios.c \
+   $(CORE_DIR)/src/libretro/libretro.c

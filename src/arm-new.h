@@ -7939,7 +7939,7 @@ if(cond_res) {
   default:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_UNDEFINED)
-      log("Undefined ARM instruction %08x at %08x\n", opcode,
+      systemLog("Undefined ARM instruction %08x at %08x\n", opcode,
           armNextPC-4);
 #endif
     CPUUndefinedException();

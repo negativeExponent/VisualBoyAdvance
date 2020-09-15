@@ -59,7 +59,7 @@ static inline u32 CPUReadMemory(u32 address)
 #ifdef DEV_VERSION
   if(address & 3) {  
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned word read: %08x at %08x\n", address, armMode ?
+      systemLog("Unaligned word read: %08x at %08x\n", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
@@ -72,7 +72,7 @@ static inline u32 CPUReadMemory(u32 address)
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal word read: %08x at %08x\n", address, armMode ?
+          systemLog("Illegal word read: %08x at %08x\n", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -135,7 +135,7 @@ static inline u32 CPUReadMemory(u32 address)
   unreadable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal word read: %08x at %08x\n", address, armMode ?
+      systemLog("Illegal word read: %08x at %08x\n", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
 #endif
@@ -166,7 +166,7 @@ static inline u32 CPUReadHalfWord(u32 address)
 #ifdef DEV_VERSION      
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned halfword read: %08x at %08x\n", address, armMode ?
+      systemLog("Unaligned halfword read: %08x at %08x\n", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
@@ -180,7 +180,7 @@ static inline u32 CPUReadHalfWord(u32 address)
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal halfword read: %08x at %08x\n", address, armMode ?
+          systemLog("Illegal halfword read: %08x at %08x\n", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -257,7 +257,7 @@ static inline u32 CPUReadHalfWord(u32 address)
   unreadable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal halfword read: %08x at %08x\n", address, armMode ?
+      systemLog("Illegal halfword read: %08x at %08x\n", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
 #endif
@@ -296,7 +296,7 @@ static inline u8 CPUReadByte(u32 address)
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          log("Illegal byte read: %08x at %08x\n", address, armMode ?
+          systemLog("Illegal byte read: %08x at %08x\n", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -353,7 +353,7 @@ static inline u8 CPUReadByte(u32 address)
   unreadable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-      log("Illegal byte read: %08x at %08x\n", address, armMode ?
+      systemLog("Illegal byte read: %08x at %08x\n", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
 #endif
@@ -376,7 +376,7 @@ static inline void CPUWriteMemory(u32 address, u32 value)
 #ifdef DEV_VERSION
   if(address & 3) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned word write: %08x to %08x from %08x\n",
+      systemLog("Unaligned word write: %08x to %08x from %08x\n",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -458,7 +458,7 @@ static inline void CPUWriteMemory(u32 address, u32 value)
   unwritable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_WRITE) {
-      log("Illegal word write: %08x to %08x from %08x\n",
+      systemLog("Illegal word write: %08x to %08x from %08x\n",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);

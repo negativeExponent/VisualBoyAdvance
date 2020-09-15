@@ -1690,7 +1690,7 @@ case 0x28:
  unknown_thumb:
 #ifdef DEV_VERSION
    if(systemVerbose & VERBOSE_UNDEFINED)
-     log("Undefined THUMB instruction %04x at %08x\n", opcode, armNextPC-2);
+     systemLog("Undefined THUMB instruction %04x at %08x\n", opcode, armNextPC-2);
 #endif
    CPUUndefinedException();
    break;

@@ -818,6 +818,7 @@ void CPUUpdateRenderBuffers(bool force)
   }
 }
 
+#ifndef __LIBRETRO__
 static bool CPUWriteStateGz(gzFile gzFile)
 {
   utilWriteInt(gzFile, SAVE_GAME_VERSION);
@@ -1074,6 +1075,7 @@ bool CPUReadState(const char * file)
 
   return res;
 }
+#endif // !__LIBRETRO__
 
 bool CPUExportEepromFile(const char *fileName)
 {
@@ -1314,6 +1316,7 @@ bool CPUImportEepromFile(const char *fileName)
   return true;
 }
 
+#ifndef __LIBRETRO__
 bool CPUReadBatteryFile(const char *fileName)
 {
   FILE *file = fopen(fileName, "rb");
@@ -1351,6 +1354,7 @@ bool CPUReadBatteryFile(const char *fileName)
   fclose(file);
   return true;
 }
+#endif
 
 bool CPUWritePNGFile(const char *fileName)
 {
@@ -1487,7 +1491,9 @@ void CPUCleanUp()
     ioMem = NULL;
   }
   
+#ifndef __LIBRETRO__
   elfCleanUp();
+#endif
 
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
@@ -1520,6 +1526,7 @@ int CPULoadRom(const char *szFile)
   if(cpuIsMultiBoot)
     whereToLoad = workRAM;
 
+#ifndef __LIBRETRO__
   if(CPUIsELF(szFile)) {
     FILE *f = fopen(szFile, "rb");
     if(!f) {
@@ -1540,7 +1547,9 @@ int CPULoadRom(const char *szFile)
       elfCleanUp();
       return 0;
     }
-  } else if(!utilLoad(szFile,
+  } else
+#endif // !__LIBRETRO__
+  if(!utilLoad(szFile,
                       utilIsGBAImage,
                       whereToLoad,
                       &romSize)) {
@@ -1941,7 +1950,7 @@ void CPUSoftwareInterrupt1(int comment)
   if(useBios) {
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
+      systemLog("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
           armState ? armNextPC - 4: armNextPC -2,
           reg[0].I,
           reg[1].I,
@@ -1968,7 +1977,7 @@ void CPUSoftwareInterrupt1(int comment)
   case 0x02:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("Halt: (VCOUNT = %2d)\n",
+      systemLog("Halt: (VCOUNT = %2d)\n",
           VCOUNT);      
     }
 #endif    
@@ -1979,7 +1988,7 @@ void CPUSoftwareInterrupt1(int comment)
   case 0x03:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("Stop: (VCOUNT = %2d)\n",
+      systemLog("Stop: (VCOUNT = %2d)\n",
           VCOUNT);      
     }
 #endif    
@@ -1991,7 +2000,7 @@ void CPUSoftwareInterrupt1(int comment)
   case 0x04:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("IntrWait: 0x%08x,0x%08x (VCOUNT = %2d)\n",
+      systemLog("IntrWait: 0x%08x,0x%08x (VCOUNT = %2d)\n",
           reg[0].I,
           reg[1].I,
           VCOUNT);      
@@ -2002,7 +2011,7 @@ void CPUSoftwareInterrupt1(int comment)
   case 0x05:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("VBlankIntrWait: (VCOUNT = %2d)\n", 
+      systemLog("VBlankIntrWait: (VCOUNT = %2d)\n", 
           VCOUNT);      
     }
 #endif
@@ -2165,7 +2174,7 @@ void CPUSoftwareInterrupt1(int comment)
   case 0x19:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("SoundBiasSet: 0x%08x (VCOUNT = %2d)\n",
+      systemLog("SoundBiasSet: 0x%08x (VCOUNT = %2d)\n",
           reg[0].I,
           VCOUNT);      
     }
@@ -2184,7 +2193,7 @@ void CPUSoftwareInterrupt1(int comment)
   default:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_SWI) {
-      log("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
+      systemLog("SWI: %08x at %08x (0x%08x,0x%08x,0x%08x,VCOUNT = %2d)\n", comment,
           armState ? armNextPC - 4: armNextPC -2,
           reg[0].I,
           reg[1].I,
@@ -2338,7 +2347,7 @@ void CPUCheckDMA(int reason, int dmamask)
         int count = (DM0CNT_L ? DM0CNT_L : 0x4000) << 1;
         if(DM0CNT_H & 0x0400)
           count <<= 1;
-        log("DMA0: s=%08x d=%08x c=%04x count=%08x\n", dma0Source, dma0Dest, 
+        systemLog("DMA0: s=%08x d=%08x c=%04x count=%08x\n", dma0Source, dma0Dest, 
             DM0CNT_H,
             count);
       }
@@ -2393,7 +2402,7 @@ void CPUCheckDMA(int reason, int dmamask)
       if(reason == 3) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_DMA1) {
-          log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
+          systemLog("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
               DM1CNT_H,
               16);
         }
@@ -2406,7 +2415,7 @@ void CPUCheckDMA(int reason, int dmamask)
           int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
           if(DM1CNT_H & 0x0400)
             count <<= 1;
-          log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
+          systemLog("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
               DM1CNT_H,
               count);
         }
@@ -2463,7 +2472,7 @@ void CPUCheckDMA(int reason, int dmamask)
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_DMA2) {
           int count = (4) << 2;
-          log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
+          systemLog("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
               DM2CNT_H,
               count);
         }
@@ -2476,7 +2485,7 @@ void CPUCheckDMA(int reason, int dmamask)
           int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
           if(DM2CNT_H & 0x0400)
             count <<= 1;
-          log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
+          systemLog("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
               DM2CNT_H,
               count);
         }
@@ -2534,7 +2543,7 @@ void CPUCheckDMA(int reason, int dmamask)
         int count = (DM3CNT_L ? DM3CNT_L : 0x10000) << 1;
         if(DM3CNT_H & 0x0400)
           count <<= 1;
-        log("DMA3: s=%08x d=%08x c=%04x count=%08x\n", dma3Source, dma3Dest,
+        systemLog("DMA3: s=%08x d=%08x c=%04x count=%08x\n", dma3Source, dma3Dest,
             DM3CNT_H,
             count);
       }
@@ -3132,7 +3141,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
 #ifdef DEV_VERSION
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      log("Unaligned halfword write: %04x to %08x from %08x\n",
+      systemLog("Unaligned halfword write: %04x to %08x from %08x\n",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -3219,7 +3228,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
   unwritable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_WRITE) {
-      log("Illegal halfword write: %04x to %08x from %08x\n",
+      systemLog("Illegal halfword write: %04x to %08x from %08x\n",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -3360,7 +3369,7 @@ void CPUWriteByte(u32 address, u8 b)
   unwritable:
 #ifdef DEV_VERSION
     if(systemVerbose & VERBOSE_ILLEGAL_WRITE) {
-      log("Illegal byte write: %02x to %08x from %08x\n",
+      systemLog("Illegal byte write: %02x to %08x from %08x\n",
           b,
           address,
           armMode ? armNextPC - 4 : armNextPC -2 );
@@ -3796,7 +3805,7 @@ void CPUInterrupt()
 }
 
 #ifdef SDL
-void log(const char *defaultMsg, ...)
+void systemLog(const char *defaultMsg, ...)
 {
   char buffer[2048];
   va_list valist;
@@ -3849,14 +3858,14 @@ void CPULoop(int ticks)
                  reg[12].I, reg[13].I, reg[14].I, reg[15].I, reg[16].I,
                  reg[17].I);
 #ifdef SDL
-        log(buffer);
+        systemLog(buffer);
 #else
         winlog(buffer);
 #endif
       } else if(!holdState) {
         sprintf(buffer, "PC=%08x\n", armNextPC);
 #ifdef SDL
-        log(buffer);
+        systemLog(buffer);
 #else
         winlog(buffer);
 #endif
@@ -4366,7 +4375,7 @@ void CPULoop(int ticks)
 }
 
 
-
+#ifndef __LIBRETRO__
 struct EmulatedSystem GBASystem = {
   // emuMain
   CPULoop,
@@ -4401,3 +4410,5 @@ struct EmulatedSystem GBASystem = {
   5000
 #endif
 };
+#else // !__LIBRETRO__
+#endif // !__LIBRETRO__

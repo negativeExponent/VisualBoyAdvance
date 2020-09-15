@@ -833,6 +833,20 @@ void systemMessage(int num, const char* fmt, ...)
    va_end(ap);
 }
 
+void logg(const char* fmt, ...)
+{
+   char buffer[256];
+   va_list ap;
+
+   if (!log_cb)
+      return;
+
+   va_start(ap, fmt);
+   vsprintf(buffer, fmt, ap);
+   log_cb(RETRO_LOG_INFO, "%s\n", buffer);
+   va_end(ap);
+}
+
 void systemFrame()
 {
 }

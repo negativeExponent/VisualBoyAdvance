@@ -3805,7 +3805,7 @@ void CPUInterrupt()
 }
 
 #ifdef SDL
-void systemLog(const char *defaultMsg, ...)
+void logg(const char *defaultMsg, ...)
 {
   char buffer[2048];
   va_list valist;

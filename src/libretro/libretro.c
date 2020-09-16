@@ -3,18 +3,10 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-//#include <string>
-//#include <vector>
 
 #include "libretro.h"
-//#include "libretro_core_options.h"
+#include "libretro_core_options.h"
 
-//#include "../src/system.h"
-//#include "../src/port.h"
-//#include "../src/types.h"
-//#include "../src/gba.h"
-//#include "../src/memory.h"
-//#include "../src/sound.h"
 #include "../Globals.h"
 #include "../RTC.h"
 #include "../Sound.h"
@@ -210,6 +202,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 void retro_set_environment(retro_environment_t cb)
 {
    environ_cb = cb;
+   libretro_set_core_options(environ_cb);
 }
 
 void retro_get_system_info(struct retro_system_info *info)
@@ -254,13 +247,11 @@ void retro_init(void)
    else
       log_cb = NULL;
 
-#if HAVE_HLE_BIOS
    const char* dir = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir) {
       strncpy(filename_bios, dir, sizeof(filename_bios));
       strncat(filename_bios, "/gba_bios.bin", sizeof(filename_bios));
    }
-#endif
 
 #ifdef FRONTEND_SUPPORTS_RGB565
    enum retro_pixel_format rgb565 = RETRO_PIXEL_FORMAT_RGB565;
@@ -469,12 +460,11 @@ static void gba_init(void)
    soundQuality = 1;
    systemSoundInit();
 
-#if HAVE_HLE_BIOS
    bool usebios = false;
 
    struct retro_variable var;
 
-   var.key = "vbanext_bios";
+   var.key = "vba_bios";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -488,10 +478,8 @@ static void gba_init(void)
 	if(usebios && filename_bios[0])
 		CPUInit(filename_bios, true);
 	else
-   		CPUInit(NULL, false);
-#else
-   CPUInit(NULL, false);
-#endif
+      CPUInit(NULL, false);
+
    CPUReset();
 
    soundReset();
@@ -541,16 +529,13 @@ static unsigned has_frame;
 static void update_variables(void)
 {
    struct retro_variable var = { 0 };
-#if USE_FRAME_SKIP
-   SetFrameskip(get_frameskip_code());
-#endif
-   var.key = "vbanext_turboenable";
+   var.key = "vba_turboenable";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
         option_turboEnable = (!strcmp(var.value, "enabled")) ? true : false;
     }
 
-    var.key = "vbanext_turbodelay";
+    var.key = "vba_turbodelay";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
         option_turboDelay = atoi(var.value);
@@ -606,10 +591,8 @@ void retro_run(void)
    update_input();
 
    has_frame = 0;
-   do
-   {
+   while (!has_frame)
       CPULoop(300000);
-   }while (!has_frame);
 }
 
 size_t retro_serialize_size(void)
@@ -801,9 +784,9 @@ void systemSoundReset(void)
 
 bool systemSoundInit(void)
 {
-   int rates[] = { 44100, 22050, 11025 };
+   int rates[] = { 44100, 22050, 11025, 44100 };
 
-   audio.rate = rates[(soundQuality >> 1) & 1];
+   audio.rate = rates[(soundQuality >> 1) & 3];
    audio.len = (int)((double)audio.rate / (16777216.0 / 280896.0));
    audio.data = (int16_t*)soundFinalWave;
 

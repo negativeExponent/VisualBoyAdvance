@@ -457,8 +457,7 @@ static void gba_init(void)
 
    doMirroring(mirroringEnable);
 
-   soundQuality = 1;
-   systemSoundInit();
+   soundSetQuality(1);
 
    bool usebios = false;
 
@@ -790,7 +789,7 @@ bool systemSoundInit(void)
    audio.len = (int)((double)audio.rate / (16777216.0 / 280896.0));
    audio.data = (int16_t*)soundFinalWave;
 
-   soundBufferLen = audio.len << 2;
+   soundBufferLen = (audio.len << 2);
    systemSoundOn = true;
 
    return true;

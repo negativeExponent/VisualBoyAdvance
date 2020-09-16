@@ -23,6 +23,8 @@
 
 #include "System.h"
 
+#define BUFFER_SIZE 800
+
 #define NR10 0x60
 #define NR11 0x62
 #define NR12 0x63
@@ -74,7 +76,7 @@ extern int soundQuality;
 extern int soundBufferLen;
 extern int soundBufferTotalLen;
 extern u32 soundNextPosition;
-extern u16 soundFinalWave[1470];
+extern u16 soundFinalWave[2*BUFFER_SIZE];
 extern int soundVolume;
 
 extern bool soundEcho;

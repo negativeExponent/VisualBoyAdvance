@@ -99,10 +99,10 @@ int soundShiftClock[16]= {
 
 int soundVolume = 0;
 
-u8 soundBuffer[6][735];
-u16 soundFinalWave[1470];
+u8 soundBuffer[6][BUFFER_SIZE];
+u16 soundFinalWave[2*BUFFER_SIZE];
 
-int soundBufferLen = 1470;
+int soundBufferLen = 2*BUFFER_SIZE;
 int soundBufferTotalLen = 14700;
 #define DEF_SOUNDQUALITY 2
 int soundQuality = DEF_SOUNDQUALITY;
@@ -274,8 +274,8 @@ variable_desc soundSaveStruct[] = {
   { &soundDSBTimer, sizeof(int) },
   { &soundDSFifoB[0], 32 },
   { &soundDSBValue, sizeof(int) },
-  { &soundBuffer[0][0], 6*735 },
-  { &soundFinalWave[0], 2*735 },
+  { &soundBuffer[0][0], 6*BUFFER_SIZE },
+  { &soundFinalWave[0], 2*BUFFER_SIZE },
   { NULL, 0 }
 };
 
@@ -1262,7 +1262,7 @@ void soundReset()
     sound3WaveRam[addr++] = 0xff;
   }
 
-  memset(soundFinalWave, 0, soundBufferLen);
+  memset(soundFinalWave, 0, sizeof(soundFinalWave));
 
   memset(soundFilter, 0, sizeof(soundFilter));
   soundEchoIndex = 0;
@@ -1271,12 +1271,12 @@ void soundReset()
 bool soundInit()
 {
   if(systemSoundInit()) {
-    memset(soundBuffer[0], 0, 735*2);
-    memset(soundBuffer[1], 0, 735*2);
-    memset(soundBuffer[2], 0, 735*2);
-    memset(soundBuffer[3], 0, 735*2);
+    memset(soundBuffer[0], 0, sizeof(soundBuffer[0]));
+    memset(soundBuffer[1], 0, sizeof(soundBuffer[1]));
+    memset(soundBuffer[2], 0, sizeof(soundBuffer[2]));
+    memset(soundBuffer[3], 0, sizeof(soundBuffer[3]));
     
-    memset(soundFinalWave, 0, soundBufferLen);
+    memset(soundFinalWave, 0, sizeof(soundFinalWave));
     
     soundPaused = true;
     return true;

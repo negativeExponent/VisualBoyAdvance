@@ -23,11 +23,18 @@
 
 extern int cpuDmaCount;
 
+#ifdef __LIBRETRO__
+extern u8 libretro_save_buf[(128 + 8) * 1024];
+extern int libretro_save_size;
+u8 *eepromData = (u8*)libretro_save_buf + (128 * 1024);
+#else
+u8 eepromData[0x2000];
+#endif
+
 int eepromMode = EEPROM_IDLE;
 int eepromByte = 0;
 int eepromBits = 0;
 int eepromAddress = 0;
-u8 eepromData[0x2000];
 u8 eepromBuffer[16];
 bool eepromInUse = false;
 int eepromSize = 512;
@@ -38,14 +45,16 @@ variable_desc eepromSaveData[] = {
   { &eepromBits , sizeof(int) },
   { &eepromAddress , sizeof(int) },
   { &eepromInUse, sizeof(bool) },
-  { &eepromData[0], 512 },
+  { &eepromData, 512 },
   { &eepromBuffer[0], 16 },
   { NULL, 0 }
 };
 
 void eepromInit()
 {
+#ifndef __LIBRETRO__
   memset(eepromData, 255, sizeof(eepromData));
+#endif
 }
 
 void eepromReset()
@@ -80,6 +89,7 @@ void eepromReadGame(gzFile gzFile, int version)
 
 int eepromRead(u32 unused/* address */)
 {
+  /* systemLog("Eeprom Read: A:%08x\n", unused); */
   switch(eepromMode) {
   case EEPROM_IDLE:
   case EEPROM_READADDRESS:
@@ -116,6 +126,7 @@ int eepromRead(u32 unused/* address */)
 
 void eepromWrite(u32 unused/* address */, u8 value)
 {
+  /* systemLog("Eeprom Write: A:%08x V:%02x\n", unused, value); */
   if(cpuDmaCount == 0)
     return;
   int bit = value & 1;

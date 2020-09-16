@@ -25,7 +25,11 @@ extern void flashReadGame(gzFile _gzFile, int version);
 extern u8 flashRead(u32 address);
 extern void flashWrite(u32 address, u8 byte);
 extern void flashDelayedWrite(u32 address, u8 byte);
+#ifdef __LIBRETRO__
+extern u8 *flashSaveMemory;
+#else
 extern u8 flashSaveMemory[0x20000];
+#endif
 extern void flashSaveDecide(u32 address, u8 byte);
 extern void flashReset();
 extern void flashSetSize(int size);

@@ -157,15 +157,22 @@ struct AUDIO_INFO
    int16_t *data;
 } audio;
 
+u8 libretro_save_buf[(128 + 8) * 1024];
+int libretro_save_size = (128 + 8) * 1024;
+
 void utilUpdateSystemColorMaps();
 
 void *retro_get_memory_data(unsigned id)
 {
-   return NULL;
+   if (id == RETRO_MEMORY_SAVE_RAM)
+      return libretro_save_buf;
+   return 0;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
+   if (id == RETRO_MEMORY_SAVE_RAM)
+      return libretro_save_size;
    return 0;
 }
 
@@ -262,6 +269,8 @@ void retro_init(void)
 #endif
 
    check_system_specs();
+
+   memset(libretro_save_buf, 0xFF, libretro_save_size);
 }
 
 static unsigned serialize_size = 0;
@@ -699,7 +708,7 @@ static void set_memory_maps(void)
       { 0, rom,               0, 0x0A000000, 0,          0, rom_size,   "ROM-WS1" },
       { 0, rom,               0, 0x0C000000, 0,          0, rom_size,   "ROM-WS2" },
       // normally, only 64K is accessible at-a-time, 128K flash are bankswitched
-      // { 0, libretro_save_buf, 0, 0x0E000000, 0,          0, 0x10000,    "SRAM" }
+      { 0, libretro_save_buf, 0, 0x0E000000, 0,          0, 0x10000,    "SRAM" }
       // NOTE: the eeprom can be accessed anywhere from D000000h-DFFFFFFh. The need to map
       // eeprom pointer to a virtual address might be needed for direct and fixed access when time comes
       // For VBA Next as well as Beetle GBA, eeprom ptr can be accessed from libretro_save_buf[128 * 1024]

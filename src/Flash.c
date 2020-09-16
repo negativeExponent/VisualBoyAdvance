@@ -35,7 +35,13 @@
 #define FLASH_PROGRAM            8
 #define FLASH_SETBANK            9
 
+#ifdef __LIBRETRO__
+extern u8 libretro_save_buf[(128 + 8) * 1024];
+extern int libretro_save_size;
+u8 *flashSaveMemory = (u8*)libretro_save_buf;
+#else
 u8 flashSaveMemory[0x20000];
+#endif
 int flashState = FLASH_READ_ARRAY;
 int flashReadState = FLASH_READ_ARRAY;
 int flashSize = 0x10000;
@@ -43,10 +49,13 @@ int flashDeviceID = 0x1b;
 int flashManufacturerID = 0x32;
 int flashBank = 0;
 
+extern bool cpuSramEnabled;
+extern bool cpuFlashEnabled;
+
 static variable_desc flashSaveData[] = {
   { &flashState, sizeof(int) },
   { &flashReadState, sizeof(int) },
-  { &flashSaveMemory[0], 0x10000 },
+  { &flashSaveMemory, 0x10000 },
   { NULL, 0 }
 };
 
@@ -54,7 +63,7 @@ static variable_desc flashSaveData2[] = {
   { &flashState, sizeof(int) },
   { &flashReadState, sizeof(int) },
   { &flashSize, sizeof(int) },  
-  { &flashSaveMemory[0], 0x20000 },
+  { &flashSaveMemory, 0x20000 },
   { NULL, 0 }
 };
 
@@ -63,13 +72,15 @@ static variable_desc flashSaveData3[] = {
   { &flashReadState, sizeof(int) },
   { &flashSize, sizeof(int) },
   { &flashBank, sizeof(int) },
-  { &flashSaveMemory[0], 0x20000 },
+  { &flashSaveMemory, 0x20000 },
   { NULL, 0 }
 };
 
 void flashInit()
 {
+#ifndef __LIBRETRO__
   memset(flashSaveMemory, 0xff, sizeof(flashSaveMemory));
+#endif
 }
 
 void flashReset()
@@ -144,15 +155,31 @@ u8 flashRead(u32 address)
 void flashSaveDecide(u32 address, u8 byte)
 {
   //  systemLog("Deciding save type %08x\n", address);
-  if(address == 0x0e005555) {
-    saveType = 2;
-    cpuSaveGameFunc = flashWrite;
-  } else {
-    saveType = 1;
-    cpuSaveGameFunc = sramWrite;
+  if (cpuFlashEnabled && cpuSramEnabled)
+  {
+    if (((address & 0xFFFF) == 0x5555) && ((byte & 0xFF) == 0xAA))
+      cpuSramEnabled = false;
+    else if((address & 0xFFFF) != 0x2AAA)
+      cpuFlashEnabled = false;
+    if(!cpuFlashEnabled || !cpuSramEnabled)
+      systemLog("%s enabled by writing 0x%02x to address 0x%08x\n",
+        cpuFlashEnabled ? "Flash" : "SRAM", byte, address);
   }
 
-  (*cpuSaveGameFunc)(address, byte);
+  if (cpuFlashEnabled)
+  {
+    saveType = 2;
+    cpuSaveGameFunc = flashWrite;
+  }
+
+  if (cpuSramEnabled)
+  {
+    saveType = 1;
+    cpuSaveGameFunc = sramWrite;
+  } 
+
+  if(cpuFlashEnabled || cpuSramEnabled)
+    (*cpuSaveGameFunc)(address, byte);
 }
 
 void flashDelayedWrite(u32 address, u8 byte)

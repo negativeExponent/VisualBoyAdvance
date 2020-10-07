@@ -34,4 +34,5 @@ SOURCES_C += \
    $(CORE_DIR)/src/Sound.c \
    $(CORE_DIR)/src/Sram.c \
    $(CORE_DIR)/src/bios.c \
-   $(CORE_DIR)/src/libretro/libretro.c
+   $(CORE_DIR)/src/libretro/libretro.c \
+   $(CORE_DIR)/src/libretro/libretro-common/streams/memory_stream.c

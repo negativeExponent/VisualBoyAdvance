@@ -36,9 +36,6 @@
 #include "elf.h"
 #include "Util.h"
 #include "Port.h"
-#ifdef PROFILING
-#include "prof/prof.h"
-#endif
 
 #define UPDATE_REG(address, value)\
   {\
@@ -99,11 +96,6 @@ bool cpuEEPROMSensorEnabled = false;
 u32 cpuPrefetch[2];
 
 int cpuTotalTicks = 0;
-#ifdef PROFILING
-int profilingTicks = 0;
-int profilingTicksReload = 0;
-static profile_segment *profilSegment = NULL;
-#endif
 
 #ifdef BKPT_SUPPORT
 u8 freezeWorkRAM[0x40000];
@@ -495,22 +487,6 @@ variable_desc saveGameStruct[] = {
 
 static int romSize = 0x2000000;
 
-#ifdef PROFILING
-void cpuProfil(profile_segment *seg)
-{
-    profilSegment = seg;
-}
-
-void cpuEnableProfiling(int hz)
-{
-  if(hz == 0)
-    hz = 100;
-  profilingTicks = profilingTicksReload = 16777216 / hz;
-  profSetHertz(hz);
-}
-#endif
-
-
 // Waitstates when accessing data
 static inline int dataTicksAccess16(u32 address) // DATA 8/16bits NON SEQ
 {
@@ -734,14 +710,6 @@ static inline int CPUUpdateTicks()
   if(timer3On && !(TM3CNT & 4) && (timer3Ticks < cpuLoopTicks)) {
     cpuLoopTicks = timer3Ticks;
   }
-#ifdef PROFILING
-  if(profilingTicksReload != 0) {
-    if(profilingTicks < cpuLoopTicks) {
-      cpuLoopTicks = profilingTicks;
-    }
-  }
-#endif
-
   if (SWITicks) {
     if (SWITicks < cpuLoopTicks)
         cpuLoopTicks = SWITicks;
@@ -816,9 +784,9 @@ void CPUUpdateRenderBuffers(bool force)
   }
 }
 
-#ifndef __LIBRETRO__
-static bool CPUWriteStateGz(gzFile gzFile)
+bool CPUWriteState(void *data)
 {
+#if 0
   utilWriteInt(gzFile, SAVE_GAME_VERSION);
 
   utilGzWrite(gzFile, &rom[0xa0], 16);
@@ -850,48 +818,14 @@ static bool CPUWriteStateGz(gzFile gzFile)
 
   // version 1.5
   rtcSaveGame(gzFile);
+#endif
   
   return true;
 }
 
-bool CPUWriteState(const char *file)
+bool CPUReadState(const void *data)
 {
-  gzFile gzFile = utilGzOpen(file, "wb");
-
-  if(gzFile == NULL) {
-    systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), file);
-    return false;
-  }
-  
-  bool res = CPUWriteStateGz(gzFile);
-
-  utilGzClose(gzFile);
-  
-  return res;
-}
-
-bool CPUWriteMemState(char *memory, int available)
-{
-  gzFile gzFile = utilMemGzOpen(memory, available, "w");
-
-  if(gzFile == NULL) {
-    return false;
-  }
-
-  bool res = CPUWriteStateGz(gzFile);
-
-  long pos = utilGzMemTell(gzFile)+8;
-
-  if(pos >= (available))
-    res = false;
-
-  utilGzClose(gzFile);
-
-  return res;
-}
-
-static bool CPUReadStateGz(gzFile gzFile)
-{
+#if 0
   int version = utilReadInt(gzFile);
 
   if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_1) {
@@ -1045,362 +979,9 @@ static bool CPUReadStateGz(gzFile gzFile)
   }
 
   CPUUpdateRegister(0x204, CPUReadHalfWordQuick(0x4000204));
+#endif
   
   return true;  
-}
-
-bool CPUReadMemState(char *memory, int available)
-{
-  gzFile gzFile = utilMemGzOpen(memory, available, "r");
-
-  bool res = CPUReadStateGz(gzFile);
-
-  utilGzClose(gzFile);
-
-  return res;
-}
-
-bool CPUReadState(const char * file)
-{
-  gzFile gzFile = utilGzOpen(file, "rb");
-
-  if(gzFile == NULL)
-    return false;
-  
-  bool res = CPUReadStateGz(gzFile);
-
-  utilGzClose(gzFile);
-
-  return res;
-}
-#endif // !__LIBRETRO__
-
-bool CPUExportEepromFile(const char *fileName)
-{
-  if(eepromInUse) {
-    FILE *file = fopen(fileName, "wb");
-    
-    if(!file) {
-      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
-                    fileName);
-      return false;
-    }
-
-    for(int i = 0; i < eepromSize;) {
-      for(int j = 0; j < 8; j++) {
-        if(fwrite(&eepromData[i+7-j], 1, 1, file) != 1) {
-          fclose(file);
-          return false;
-        }
-      }
-      i += 8;
-    }
-    fclose(file);
-  }
-  return true;
-}
-
-bool CPUWriteBatteryFile(const char *fileName)
-{
-  if(gbaSaveType == 0) {
-    if(eepromInUse)
-      gbaSaveType = 3;
-    else switch(saveType) {
-    case 1:
-      gbaSaveType = 1;
-      break;
-    case 2:
-      gbaSaveType = 2;
-      break;
-    }
-  }
-  
-  if((gbaSaveType) && (gbaSaveType!=5)) {
-    FILE *file = fopen(fileName, "wb");
-    
-    if(!file) {
-      systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
-                    fileName);
-      return false;
-    }
-    
-    // only save if Flash/Sram in use or EEprom in use
-    if(gbaSaveType != 3) {
-      if(gbaSaveType == 2) {
-        if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize) {
-          fclose(file);
-          return false;
-        }
-      } else {
-        if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-          fclose(file);
-          return false;
-        }
-      }
-    } else {
-      if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize) {
-        fclose(file);
-        return false;
-      }
-    }
-    fclose(file);
-  }
-  return true;
-}
-
-bool CPUReadGSASnapshot(const char *fileName)
-{
-  int i;
-  FILE *file = fopen(fileName, "rb");
-    
-  if(!file) {
-    systemMessage(MSG_CANNOT_OPEN_FILE, N_("Cannot open file %s"), fileName);
-    return false;
-  }
-  
-  // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
-
-  // long size = ftell(file);
-  fseek(file, 0x0, SEEK_SET);
-  fread(&i, 1, 4, file);
-  fseek(file, i, SEEK_CUR); // Skip SharkPortSave
-  fseek(file, 4, SEEK_CUR); // skip some sort of flag
-  fread(&i, 1, 4, file); // name length
-  fseek(file, i, SEEK_CUR); // skip name
-  fread(&i, 1, 4, file); // desc length
-  fseek(file, i, SEEK_CUR); // skip desc
-  fread(&i, 1, 4, file); // notes length
-  fseek(file, i, SEEK_CUR); // skip notes
-  int saveSize;
-  fread(&saveSize, 1, 4, file); // read length
-  saveSize -= 0x1c; // remove header size
-  char buffer[17];
-  char buffer2[17];
-  fread(buffer, 1, 16, file);
-  buffer[16] = 0;
-  for(i = 0; i < 16; i++)
-    if(buffer[i] < 32)
-      buffer[i] = 32;
-  memcpy(buffer2, &rom[0xa0], 16);
-  buffer2[16] = 0;
-  for(i = 0; i < 16; i++)
-    if(buffer2[i] < 32)
-      buffer2[i] = 32;  
-  if(memcmp(buffer, buffer2, 16)) {
-    systemMessage(MSG_CANNOT_IMPORT_SNAPSHOT_FOR,
-                  N_("Cannot import snapshot for %s. Current game is %s"),
-                  buffer,
-                  buffer2);
-    fclose(file);
-    return false;
-  }
-  fseek(file, 12, SEEK_CUR); // skip some flags
-  if(saveSize >= 65536) {
-    if(fread(flashSaveMemory, 1, saveSize, file) != (size_t)saveSize) {
-      fclose(file);
-      return false;
-    }
-  } else {
-    systemMessage(MSG_UNSUPPORTED_SNAPSHOT_FILE,
-                  N_("Unsupported snapshot file %s"),
-                  fileName);
-    fclose(file);
-    return false;
-  }
-  fclose(file);
-  CPUReset();
-  return true;
-}
-
-bool CPUWriteGSASnapshot(const char *fileName, 
-                         const char *title, 
-                         const char *desc, 
-                         const char *notes)
-{
-  FILE *file = fopen(fileName, "wb");
-    
-  if(!file) {
-    systemMessage(MSG_CANNOT_OPEN_FILE, N_("Cannot open file %s"), fileName);
-    return false;
-  }
-
-  u8 buffer[17];
-
-  utilPutDword(buffer, 0x0d); // SharkPortSave length
-  fwrite(buffer, 1, 4, file);
-  fwrite("SharkPortSave", 1, 0x0d, file);
-  utilPutDword(buffer, 0x000f0000);
-  fwrite(buffer, 1, 4, file); // save type 0x000f0000 = GBA save
-  utilPutDword(buffer, (u32)strlen(title));
-  fwrite(buffer, 1, 4, file); // title length
-  fwrite(title, 1, strlen(title), file);
-  utilPutDword(buffer, (u32)strlen(desc));
-  fwrite(buffer, 1, 4, file); // desc length
-  fwrite(desc, 1, strlen(desc), file);
-  utilPutDword(buffer, (u32)strlen(notes));
-  fwrite(buffer, 1, 4, file); // notes length
-  fwrite(notes, 1, strlen(notes), file);
-  int saveSize = 0x10000;
-  if(gbaSaveType == 2)
-    saveSize = flashSize;
-  int totalSize = saveSize + 0x1c;
-
-  utilPutDword(buffer, totalSize); // length of remainder of save - CRC
-  fwrite(buffer, 1, 4, file);
-
-  char temp[0x2001c];
-  memset(temp, 0, 28);
-  memcpy(temp, &rom[0xa0], 16); // copy internal name
-  temp[0x10] = rom[0xbe]; // reserved area (old checksum)
-  temp[0x11] = rom[0xbf]; // reserved area (old checksum)
-  temp[0x12] = rom[0xbd]; // complement check
-  temp[0x13] = rom[0xb0]; // maker
-  temp[0x14] = 1; // 1 save ?
-  memcpy(&temp[0x1c], flashSaveMemory, saveSize); // copy save
-  fwrite(temp, 1, totalSize, file); // write save + header
-  u32 crc = 0;
-  
-  for(int i = 0; i < totalSize; i++) {
-    crc += ((u32)temp[i] << (crc % 0x18));
-  }
-  
-  utilPutDword(buffer, crc);
-  fwrite(buffer, 1, 4, file); // CRC?
-  
-  fclose(file);
-  return true;
-}
-
-bool CPUImportEepromFile(const char *fileName)
-{
-  FILE *file = fopen(fileName, "rb");
-    
-  if(!file)
-    return false;
-  
-  // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
-
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  if(size == 512 || size == 0x2000) {
-    if(fread(eepromData, 1, size, file) != (size_t)size) {
-      fclose(file);
-      return false;
-    }
-    for(int i = 0; i < size;) {
-      u8 tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;      
-      tmp = eepromData[i];
-      eepromData[i] = eepromData[7-i];
-      eepromData[7-i] = tmp;
-      i++;      
-      i += 4;
-    }
-  } else
-    return false;
-  fclose(file);
-  return true;
-}
-
-#ifndef __LIBRETRO__
-bool CPUReadBatteryFile(const char *fileName)
-{
-  FILE *file = fopen(fileName, "rb");
-    
-  if(!file)
-    return false;
-  
-  // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
-
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-  if(size == 512 || size == 0x2000) {
-    if(fread(eepromData, 1, size, file) != (size_t)size) {
-      fclose(file);
-      return false;
-    }
-  } else {
-    if(size == 0x20000) {
-      if(fread(flashSaveMemory, 1, 0x20000, file) != 0x20000) {
-        fclose(file);
-        return false;
-      }
-      flashSetSize(0x20000);
-    } else {
-      if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-        fclose(file);
-        return false;
-      }
-      flashSetSize(0x10000);
-    }
-  }
-  fclose(file);
-  return true;
-}
-#endif
-
-bool CPUWritePNGFile(const char *fileName)
-{
-  return utilWritePNGFile(fileName, 240, 160, pix);
-}
-
-bool CPUWriteBMPFile(const char *fileName)
-{
-  return utilWriteBMPFile(fileName, 240, 160, pix);
-}
-
-bool CPUIsZipFile(const char * file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(_stricmp(p, ".zip") == 0)
-        return true;
-    }
-  }
-
-  return false;
-}
-
-bool CPUIsGBAImage(const char * file)
-{
-  cpuIsMultiBoot = false;
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(_stricmp(p, ".gba") == 0)
-        return true;
-      if(_stricmp(p, ".agb") == 0)
-        return true;
-      if(_stricmp(p, ".bin") == 0)
-        return true;
-      if(_stricmp(p, ".elf") == 0)
-        return true;
-      if(_stricmp(p, ".mb") == 0) {
-        cpuIsMultiBoot = true;
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 bool CPUIsGBABios(const char * file)
@@ -1423,27 +1004,8 @@ bool CPUIsGBABios(const char * file)
   return false;
 }
 
-bool CPUIsELF(const char *file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-    
-    if(p != NULL) {
-      if(_stricmp(p, ".elf") == 0)
-        return true;
-    }
-  }
-  return false;
-}
-
 void CPUCleanUp()
 {
-#ifdef PROFILING
-  if(profilingTicksReload) {
-    profCleanup();
-  }
-#endif
-  
   if(rom != NULL) {
     free(rom);
     rom = NULL;
@@ -1524,31 +1086,8 @@ int CPULoadRom(const char *szFile)
   if(cpuIsMultiBoot)
     whereToLoad = workRAM;
 
-#ifndef __LIBRETRO__
-  if(CPUIsELF(szFile)) {
-    FILE *f = fopen(szFile, "rb");
-    if(!f) {
-      systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"),
-                    szFile);
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
-      return 0;
-    }
-    bool res = elfRead(szFile, &romSize, f);
-    if(!res || romSize == 0) {
-      free(rom);
-      rom = NULL;
-      free(workRAM);
-      workRAM = NULL;
-      elfCleanUp();
-      return 0;
-    }
-  } else
-#endif // !__LIBRETRO__
   if(!utilLoad(szFile,
-                      utilIsGBAImage,
+                      NULL,
                       whereToLoad,
                       &romSize)) {
     free(rom);
@@ -1912,24 +1451,6 @@ void CPUSoftwareInterrupt1(int comment)
   if(comment == 0xff) {
     extern void (*dbgOutput)(char *, u32);
     dbgOutput(NULL, reg[0].I);
-    return;
-  }
-#endif
-#ifdef PROFILING
-  if(comment == 0xfe) {
-    profStartup(reg[0].I, reg[1].I);
-    return;
-  }
-  if(comment == 0xfd) {
-    profControl(reg[0].I);
-    return;
-  }
-  if(comment == 0xfc) {
-    profCleanup();
-    return;
-  }
-  if(comment == 0xfb) {
-    profCount();
     return;
   }
 #endif
@@ -4271,26 +3792,6 @@ void CPULoop(int ticks)
         soundTicks += SOUND_CLOCK_TICKS;
       }
 
-#ifdef PROFILING
-      profilingTicks -= clockTicks;
-      if(profilingTicks <= 0) {
-        profilingTicks += profilingTicksReload;
-        if(profilSegment) {
-	  profile_segment *seg = profilSegment;
-	  do {
-	    u16 *b = (u16 *)seg->sbuf;
-	    int pc = ((reg[15].I - seg->s_lowpc) * seg->s_scale)/0x10000;
-	    if(pc >= 0 && pc < seg->ssiz) {
-            b[pc]++;
-	      break;
-          }
-
-	    seg = seg->next;
-	  } while(seg);
-        }
-      }
-#endif
-
       ticks -= clockTicks;
 
       cpuNextEvent = CPUUpdateTicks();
@@ -4371,42 +3872,3 @@ void CPULoop(int ticks)
     }
   }
 }
-
-
-#ifndef __LIBRETRO__
-struct EmulatedSystem GBASystem = {
-  // emuMain
-  CPULoop,
-  // emuReset
-  CPUReset,
-  // emuCleanUp
-  CPUCleanUp,
-  // emuReadBattery
-  CPUReadBatteryFile,
-  // emuWriteBattery
-  CPUWriteBatteryFile,
-  // emuReadState
-  CPUReadState,
-  // emuWriteState 
-  CPUWriteState,
-  // emuReadMemState
-  CPUReadMemState,
-  // emuWriteMemState
-  CPUWriteMemState,
-  // emuWritePNG
-  CPUWritePNGFile,
-  // emuWriteBMP
-  CPUWriteBMPFile,
-  // emuUpdateCPSR
-  CPUUpdateCPSR,
-  // emuHasDebugger
-  true,
-  // emuCount
-#ifdef FINAL_VERSION
-  250000
-#else
-  5000
-#endif
-};
-#else // !__LIBRETRO__
-#endif // !__LIBRETRO__

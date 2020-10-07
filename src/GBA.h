@@ -106,9 +106,9 @@ extern bool CPUWriteBMPFile(const char *);
 extern void CPUCleanUp();
 extern void CPUUpdateRender();
 extern bool CPUReadMemState(char *, int);
-extern bool CPUReadState(const char *);
+extern bool CPUReadState(const void *);
 extern bool CPUWriteMemState(char *, int);
-extern bool CPUWriteState(const char *);
+extern bool CPUWriteState(void *);
 extern int CPULoadRom(const char *);
 extern void doMirroring(bool);
 extern void CPUUpdateRegister(u32, u16);
@@ -121,11 +121,6 @@ extern void CPULoop(int);
 extern void CPUCheckDMA(int,int);
 extern bool CPUIsGBAImage(const char *);
 extern bool CPUIsZipFile(const char *);
-#ifdef PROFILING
-#include "prof/prof.h"
-extern void cpuProfil(profile_segment *seg);
-extern void cpuEnableProfiling(int hz);
-#endif
 
 extern struct EmulatedSystem GBASystem;
 

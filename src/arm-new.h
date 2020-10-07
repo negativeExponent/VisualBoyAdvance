@@ -18,6 +18,7 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #define CONSOLE_OUTPUT(a,b)
+#define maybe_unused(a) ((void)(a))
 
 #define OP_AND \
       reg[dest].I = reg[(opcode>>16)&15].I & value;\
@@ -351,7 +352,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       \
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
@@ -395,7 +396,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -440,7 +441,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -490,7 +491,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -532,7 +533,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -582,7 +583,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -632,7 +633,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -684,7 +685,7 @@
       int base = (opcode >> 16) & 0x0F;\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -747,7 +748,7 @@
       int shift = (opcode & 0xF00) >> 7;\
       int base = (opcode >> 16) & 0x0F;\
       int dest = (opcode >> 12) & 0x0F;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -791,7 +792,7 @@
       /* OP Rd,Rb,Rm LSL # */ \
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -834,7 +835,7 @@
        /* OP Rd,Rb,Rm LSR # */ \
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -878,7 +879,7 @@
        /* OP Rd,Rb,Rm ASR # */\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -927,7 +928,7 @@
        /* OP Rd,Rb,Rm ROR # */\
       int shift = (opcode >> 7) & 0x1F;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -968,7 +969,7 @@
        /* OP Rd,Rb,Rm LSL Rs */\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -1017,7 +1018,7 @@
        /* OP Rd,Rb,Rm LSR Rs */ \
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -1066,7 +1067,7 @@
        /* OP Rd,Rb,Rm ASR Rs */ \
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -1117,7 +1118,7 @@
        /* OP Rd,Rb,Rm ROR Rs */\
       int shift = reg[(opcode >> 8)&15].B.B0;\
       int dest = (opcode>>12) & 15;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\
@@ -1179,7 +1180,7 @@
     {\
       int shift = (opcode & 0xF00) >> 7;\
       int dest = (opcode >> 12) & 0x0F;\
-      bool C_OUT = C_FLAG;\
+      bool C_OUT = C_FLAG; maybe_unused(C_OUT); \
       u32 value;\
       if ((dest == 15)||((opcode & 0x02000010)==0x10))\
       {\

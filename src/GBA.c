@@ -1435,7 +1435,7 @@ void CPUSoftwareInterrupt1(int comment)
   static bool disableMessage = false;
   if(armState) comment >>= 16;
   if(comment == 0xfa) {
-    agbPrintFlush();
+    /* agbPrintFlush(); */
     return;
   }
 #ifdef SDL
@@ -2679,7 +2679,7 @@ void CPUWriteHalfWord(u32 address, u16 value)
     if(address == 0x80000c4 || address == 0x80000c6 || address == 0x80000c8) {
       if(!rtcWrite(address, value))
         goto unwritable;
-    } else if(!agbPrintWrite(address, value)) goto unwritable;
+    } /* else if(!agbPrintWrite(address, value)) goto unwritable; */
     break;
   case 13:
     if(cpuEEPROMEnabled) {
@@ -2927,9 +2927,9 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
   if(romSize < 0x1fe2000) {
     *((u16 *)&rom[0x1fe209c]) = 0xdffa; // SWI 0xFA
     *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
-  } else {
+  } /* else {
     agbPrintEnable(false);
-  }
+  } */
 }
 
 void CPUReset()

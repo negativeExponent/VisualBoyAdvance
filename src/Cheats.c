@@ -928,24 +928,24 @@ int cheatsCheckKeys(u32 keys, u32 extended)
 		}
         break;
       case GSA_8_BIT_POINTER :
-        if ((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000) ||
-            (CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000))
+        if (((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000)) ||
+            ((CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000)))
         {
           CPUWriteByte(CPUReadMemory(cheatsList[i].address)+((cheatsList[i].value & 0xFFFFFF00) >> 8),
                        cheatsList[i].value & 0xFF);
         }
         break;
       case GSA_16_BIT_POINTER :
-        if ((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000) ||
-            (CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000))
+        if (((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000)) ||
+            ((CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000)))
         {
           CPUWriteHalfWord(CPUReadMemory(cheatsList[i].address)+((cheatsList[i].value & 0xFFFF0000) >> 15),
                        cheatsList[i].value & 0xFFFF);
         }
         break;
       case GSA_32_BIT_POINTER :
-        if ((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000) ||
-            (CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000))
+        if (((CPUReadMemory(cheatsList[i].address)>=0x02000000) && (CPUReadMemory(cheatsList[i].address)<0x02040000)) ||
+            ((CPUReadMemory(cheatsList[i].address)>=0x03000000) && (CPUReadMemory(cheatsList[i].address)<0x03008000)))
         {
           CPUWriteMemory(CPUReadMemory(cheatsList[i].address),
                        cheatsList[i].value);
@@ -953,15 +953,15 @@ int cheatsCheckKeys(u32 keys, u32 extended)
         break;
       case GSA_8_BIT_ADD :
         CPUWriteByte(cheatsList[i].address,
-                    (cheatsList[i].value & 0xFF) + CPUReadMemory(cheatsList[i].address) & 0xFF);
+                    (cheatsList[i].value & 0xFF) + (CPUReadMemory(cheatsList[i].address) & 0xFF));
         break;
       case GSA_16_BIT_ADD :
         CPUWriteHalfWord(cheatsList[i].address,
-                        (cheatsList[i].value & 0xFFFF) + CPUReadMemory(cheatsList[i].address) & 0xFFFF);
+                        (cheatsList[i].value & 0xFFFF) + (CPUReadMemory(cheatsList[i].address) & 0xFFFF));
         break;
       case GSA_32_BIT_ADD :
         CPUWriteMemory(cheatsList[i].address ,
-                       cheatsList[i].value + CPUReadMemory(cheatsList[i].address) & 0xFFFFFFFF);
+                       cheatsList[i].value + (CPUReadMemory(cheatsList[i].address) & 0xFFFFFFFF));
         break;
       case GSA_8_BIT_IF_LOWER_U:
         if (!(CPUReadByte(cheatsList[i].address) < (cheatsList[i].value & 0xFF))) {
@@ -2821,6 +2821,7 @@ extern void debuggerBreakOnWrite(u32 , u32, u32, int, int);
 
 static u8 cheatsGetType(u32 address)
 {
+  return 0;
 }
 
 void cheatsWriteMemory(u32 address, u32 value)

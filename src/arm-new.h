@@ -2749,7 +2749,7 @@ if(cond_res) {
     LOGICAL_DATA_OPCODE_WITHOUT_base(OP_EORS, OP_EOR, 0x030);
 // CYCLES: base cycle count (1, 2, or 3)
 #define MUL_INSN(CYCLES)                                  \
-      clockTicks = 0;
+      clockTicks = 0; \
       if(((s32)rs)<0) \
          rs = ~rs; \
       if((rs & 0xFFFFFF00) == 0) \

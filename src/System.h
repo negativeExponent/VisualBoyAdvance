@@ -20,7 +20,6 @@
 #ifndef VBA_SYSTEM_H
 #define VBA_SYSTEM_H
 
-#include "unzip.h"
 #include <stdbool.h>
 
 #ifndef NULL
@@ -40,6 +39,10 @@ typedef unsigned long long u64;
 typedef signed char s8;
 typedef signed short s16;
 typedef signed int s32;
+
+/* placeholders */
+typedef void *gzFile;
+typedef void *voidp;
 
 #ifdef _MSC_VER
 typedef signed __int64 s64;

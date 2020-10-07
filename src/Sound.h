@@ -22,6 +22,7 @@
 #define VBA_SOUND_H
 
 #include "System.h"
+#include "Util.h"
 
 #define BUFFER_SIZE 800
 
@@ -61,8 +62,8 @@ void soundEnable(int);
 void soundDisable(int);
 int  soundGetEnable();
 void soundReset();
-void soundSaveGame(gzFile);
-void soundReadGame(gzFile, int);
+void soundSaveGame(memstream_t*);
+void soundReadGame(memstream_t*, int);
 void soundEvent8(u32, u8);
 void soundEvent16(u32, u16);
 void soundTimerOverflow(int);

@@ -2608,6 +2608,7 @@ void cheatsAddCBACode(const char *code, const char *desc)
   }
 }
 
+#if 0
 void cheatsSaveGame(gzFile file)
 {
   utilWriteInt(file, cheatsNumber);
@@ -2684,6 +2685,7 @@ void cheatsReadGame(gzFile file, int version)
     }
   }
 }
+#endif
 
 void cheatsSaveCheatList(const char *file)
 {

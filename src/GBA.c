@@ -771,49 +771,50 @@ void CPUUpdateRenderBuffers(bool force)
   }
 }
 
-bool CPUWriteState(void *data)
+#include "Util.h"
+
+bool CPUWriteState(void)
 {
-#if 0
-  utilWriteInt(gzFile, SAVE_GAME_VERSION);
+  memstream_t *mem = memstream_open(1);
 
-  utilGzWrite(gzFile, &rom[0xa0], 16);
+  utilWriteIntMem(mem, SAVE_GAME_VERSION);
 
-  utilWriteInt(gzFile, useBios);
+  utilWriteMem(mem, &rom[0xa0], 16);
+
+  utilWriteIntMem(mem, useBios);
   
-  utilGzWrite(gzFile, &reg[0], sizeof(reg));
+  utilWriteMem(mem, &reg[0], sizeof(reg));
 
-  utilWriteData(gzFile, saveGameStruct);
+  utilWriteDataMem(mem, saveGameStruct);
 
   // new to version 0.7.1
-  utilWriteInt(gzFile, stopState);
+  utilWriteIntMem(mem, stopState);
   // new to version 0.8
-  utilWriteInt(gzFile, IRQTicks);
+  utilWriteIntMem(mem, IRQTicks);
 
-  utilGzWrite(gzFile, internalRAM, 0x8000);
-  utilGzWrite(gzFile, paletteRAM, 0x400);
-  utilGzWrite(gzFile, workRAM, 0x40000);
-  utilGzWrite(gzFile, vram, 0x20000);
-  utilGzWrite(gzFile, oam, 0x400);
-  utilGzWrite(gzFile, pix, 4*241*162);
-  utilGzWrite(gzFile, ioMem, 0x400);
+  utilWriteMem(mem, internalRAM, 0x8000);
+  utilWriteMem(mem, paletteRAM, 0x400);
+  utilWriteMem(mem, workRAM, 0x40000);
+  utilWriteMem(mem, vram, 0x20000);
+  utilWriteMem(mem, oam, 0x400);
+  utilWriteMem(mem, pix, 4*241*162);
+  utilWriteMem(mem, ioMem, 0x400);
 
-  eepromSaveGame(gzFile);
-  flashSaveGame(gzFile);
-  soundSaveGame(gzFile);
+  eepromSaveGame(mem);
+  flashSaveGame(mem);
+  soundSaveGame(mem);
+  rtcSaveGame(mem);
 
-  cheatsSaveGame(gzFile);
-
-  // version 1.5
-  rtcSaveGame(gzFile);
-#endif
+  memstream_close(mem);
   
   return true;
 }
 
-bool CPUReadState(const void *data)
+bool CPUReadState(void)
 {
-#if 0
-  int version = utilReadInt(gzFile);
+  memstream_t *mem = memstream_open(0);
+
+  int version = utilReadIntMem(mem);
 
   if(version > SAVE_GAME_VERSION || version < SAVE_GAME_VERSION_1) {
     systemMessage(MSG_UNSUPPORTED_VBA_SGM,
@@ -824,7 +825,7 @@ bool CPUReadState(const void *data)
   
   u8 romname[17];
 
-  utilGzRead(gzFile, romname, 16);
+  utilReadMem(mem, romname, 16);
 
   if(memcmp(&rom[0xa0], romname, 16) != 0) {
     romname[16]=0;
@@ -835,7 +836,7 @@ bool CPUReadState(const void *data)
     return false;
   }
 
-  bool ub = utilReadInt(gzFile) ? true : false;
+  bool ub = utilReadIntMem(mem) ? true : false;
 
   if(ub != useBios) {
     if(useBios)
@@ -847,23 +848,14 @@ bool CPUReadState(const void *data)
     return false;
   }
 
-  utilGzRead(gzFile, &reg[0], sizeof(reg));
+  utilReadMem(mem, &reg[0], sizeof(reg));
 
-  utilReadData(gzFile, saveGameStruct);
+  utilReadDataMem(mem, saveGameStruct);
 
-  if(version < SAVE_GAME_VERSION_3)
-    stopState = false;
-  else
-    stopState = utilReadInt(gzFile) ? true : false;
+  stopState = utilReadIntMem(mem) ? true : false;
 
-  if(version < SAVE_GAME_VERSION_4)
   {
-    IRQTicks = 0;
-    intState = false;
-  }
-  else
-  {
-    IRQTicks = utilReadInt(gzFile);
+    IRQTicks = utilReadIntMem(mem);
     if (IRQTicks>0)
       intState = true;
     else
@@ -873,57 +865,21 @@ bool CPUReadState(const void *data)
     }
   }
   
-  utilGzRead(gzFile, internalRAM, 0x8000);
-  utilGzRead(gzFile, paletteRAM, 0x400);
-  utilGzRead(gzFile, workRAM, 0x40000);
-  utilGzRead(gzFile, vram, 0x20000);
-  utilGzRead(gzFile, oam, 0x400);
-  if(version < SAVE_GAME_VERSION_6)
-    utilGzRead(gzFile, pix, 4*240*160);
-  else
-    utilGzRead(gzFile, pix, 4*241*162);
-  utilGzRead(gzFile, ioMem, 0x400);
+  utilReadMem(mem, internalRAM, 0x8000);
+  utilReadMem(mem, paletteRAM, 0x400);
+  utilReadMem(mem, workRAM, 0x40000);
+  utilReadMem(mem, vram, 0x20000);
+  utilReadMem(mem, oam, 0x400);
+  utilReadMem(mem, pix, 4*241*162);
+  utilReadMem(mem, ioMem, 0x400);
 
-  eepromReadGame(gzFile, version);
-  flashReadGame(gzFile, version);
-  soundReadGame(gzFile, version);
+  eepromReadGame(mem, version);
+  flashReadGame(mem, version);
+  soundReadGame(mem, version);
   
-  if(version > SAVE_GAME_VERSION_1) {
-    cheatsReadGame(gzFile, version);
-  }
-  if(version > SAVE_GAME_VERSION_6) {
-    rtcReadGame(gzFile);
-  }
+  rtcReadGame(mem);
 
-  if(version <= SAVE_GAME_VERSION_7) {
-    u32 temp;
-#define SWAP(a,b,c) \
-    temp = (a);\
-    (a) = (b)<<16|(c);\
-    (b) = (temp) >> 16;\
-    (c) = (temp) & 0xFFFF;
-    
-    SWAP(dma0Source, DM0SAD_H, DM0SAD_L);
-    SWAP(dma0Dest,   DM0DAD_H, DM0DAD_L);
-    SWAP(dma1Source, DM1SAD_H, DM1SAD_L);
-    SWAP(dma1Dest,   DM1DAD_H, DM1DAD_L);
-    SWAP(dma2Source, DM2SAD_H, DM2SAD_L);
-    SWAP(dma2Dest,   DM2DAD_H, DM2DAD_L);
-    SWAP(dma3Source, DM3SAD_H, DM3SAD_L);
-    SWAP(dma3Dest,   DM3DAD_H, DM3DAD_L);
-  }
-
-  if(version <= SAVE_GAME_VERSION_8) {
-    timer0ClockReload = TIMER_TICKS[TM0CNT & 3]; 
-    timer1ClockReload = TIMER_TICKS[TM1CNT & 3];
-    timer2ClockReload = TIMER_TICKS[TM2CNT & 3];
-    timer3ClockReload = TIMER_TICKS[TM3CNT & 3];
-
-    timer0Ticks = ((0x10000 - TM0D) << timer0ClockReload) - timer0Ticks;
-    timer1Ticks = ((0x10000 - TM1D) << timer1ClockReload) - timer1Ticks;
-    timer2Ticks = ((0x10000 - TM2D) << timer2ClockReload) - timer2Ticks;
-    timer3Ticks = ((0x10000 - TM3D) << timer3ClockReload) - timer3Ticks;
-  }
+  memstream_close(mem);
 
   // set pointers!
   layerEnable = layerSettings & DISPCNT;
@@ -966,7 +922,6 @@ bool CPUReadState(const void *data)
   }
 
   CPUUpdateRegister(0x204, CPUReadHalfWordQuick(0x4000204));
-#endif
   
   return true;  
 }

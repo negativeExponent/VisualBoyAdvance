@@ -211,12 +211,12 @@ void rtcReset()
   rtcClockData.state = IDLE;
 }
 
-void rtcSaveGame(gzFile gzFile)
+void rtcSaveGame(memstream_t *mem)
 {
-  utilGzWrite(gzFile, &rtcClockData, sizeof(rtcClockData));
+  utilWriteMem(mem, &rtcClockData, sizeof(rtcClockData));
 }
 
-void rtcReadGame(gzFile gzFile)
+void rtcReadGame(memstream_t *mem)
 {
-  utilGzRead(gzFile, &rtcClockData, sizeof(rtcClockData));
+  utilReadMem(mem, &rtcClockData, sizeof(rtcClockData));
 }

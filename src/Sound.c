@@ -1301,31 +1301,22 @@ void soundSetQuality(int quality)
   }
 }
 
-void soundSaveGame(gzFile gzFile)
+void soundSaveGame(memstream_t *mem)
 {
-  utilWriteData(gzFile, soundSaveStruct);
-  utilWriteData(gzFile, soundSaveStructV2);
+  utilWriteDataMem(mem, soundSaveStruct);
+  utilWriteDataMem(mem, soundSaveStructV2);
   
-  utilGzWrite(gzFile, &soundQuality, sizeof(int));
+  utilWriteMem(mem, &soundQuality, sizeof(int));
 }
 
-void soundReadGame(gzFile gzFile, int version)
+void soundReadGame(memstream_t *mem, int version)
 {
-  utilReadData(gzFile, soundSaveStruct);
-  if(version >= SAVE_GAME_VERSION_3) {
-    utilReadData(gzFile, soundSaveStructV2);
-  } else {
-    sound3Bank = (ioMem[NR30] >> 6) & 1;
-    sound3DataSize = (ioMem[NR30] >> 5) & 1;
-    sound3ForcedOutput = (ioMem[NR32] >> 7) & 1;
-    // nothing better to do here...
-    memcpy(&sound3WaveRam[0x00], &ioMem[0x90], 0x10);    
-    memcpy(&sound3WaveRam[0x10], &ioMem[0x90], 0x10);
-  }
+  utilReadDataMem(mem, soundSaveStruct);
+  utilReadDataMem(mem, soundSaveStructV2);
   soundBufferIndex = soundIndex * 2;
   
   int quality = 1;
-  utilGzRead(gzFile, &quality, sizeof(int));
+  utilReadMem(mem, &quality, sizeof(int));
   soundSetQuality(quality);
   
   sound1Wave = soundWavePattern[ioMem[NR11] >> 6];

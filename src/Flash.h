@@ -20,8 +20,10 @@
 #ifndef VBA_FLASH_H
 #define VBA_FLASH_H
 
-extern void flashSaveGame(gzFile _gzFile);
-extern void flashReadGame(gzFile _gzFile, int version);
+#include "Util.h"
+
+extern void flashSaveGame(memstream_t*);
+extern void flashReadGame(memstream_t*, int);
 extern u8 flashRead(u32 address);
 extern void flashWrite(u32 address, u8 byte);
 extern void flashDelayedWrite(u32 address, u8 byte);

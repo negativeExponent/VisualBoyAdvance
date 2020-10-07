@@ -55,21 +55,6 @@ extern bool cpuFlashEnabled;
 static variable_desc flashSaveData[] = {
   { &flashState, sizeof(int) },
   { &flashReadState, sizeof(int) },
-  { &flashSaveMemory, 0x10000 },
-  { NULL, 0 }
-};
-
-static variable_desc flashSaveData2[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
-  { &flashSize, sizeof(int) },  
-  { &flashSaveMemory, 0x20000 },
-  { NULL, 0 }
-};
-
-static variable_desc flashSaveData3[] = {
-  { &flashState, sizeof(int) },
-  { &flashReadState, sizeof(int) },
   { &flashSize, sizeof(int) },
   { &flashBank, sizeof(int) },
   { &flashSaveMemory, 0x20000 },
@@ -90,22 +75,14 @@ void flashReset()
   flashBank = 0;
 }
 
-void flashSaveGame(gzFile gzFile)
+void flashSaveGame(memstream_t *mem)
 {
-  utilWriteData(gzFile, flashSaveData3);
+  utilWriteDataMem(mem, flashSaveData);
 }
 
-void flashReadGame(gzFile gzFile, int version)
+void flashReadGame(memstream_t *mem, int version)
 {
-  if(version < SAVE_GAME_VERSION_5)
-    utilReadData(gzFile, flashSaveData);
-  else if(version < SAVE_GAME_VERSION_7) {
-    utilReadData(gzFile, flashSaveData2);
-    flashBank = 0;
-    flashSetSize(flashSize);
-  } else {
-    utilReadData(gzFile, flashSaveData3);
-  }
+  utilReadDataMem(mem, flashSaveData);
 }
 
 void flashSetSize(int size)

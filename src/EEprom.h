@@ -20,8 +20,10 @@
 #ifndef VBA_EEPROM_H
 #define VBA_EEPROM_H
 
-extern void eepromSaveGame(gzFile _gzFile);
-extern void eepromReadGame(gzFile _gzFile, int version);
+#include "Util.h"
+
+extern void eepromSaveGame(memstream_t*);
+extern void eepromReadGame(memstream_t*, int version);
 extern int eepromRead(u32 address);
 extern void eepromWrite(u32 address, u8 value);
 extern void eepromInit();

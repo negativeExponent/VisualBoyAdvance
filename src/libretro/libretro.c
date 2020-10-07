@@ -6,6 +6,7 @@
 
 #include "libretro.h"
 #include "libretro_core_options.h"
+#include "libretro-common/include/streams/memory_stream.h"
 
 #include "../Globals.h"
 #include "../RTC.h"
@@ -392,9 +393,14 @@ static void gba_init(void)
 
    soundReset();
 
-   //uint8_t * state_buf = (uint8_t*)malloc(2000000);
-   //serialize_size = CPUWriteState(state_buf, 2000000);
-   //free(state_buf);
+   {
+      uint8_t * state_buf = (uint8_t*)malloc(2000000);
+      memstream_set_buffer(state_buf, 2000000);
+      CPUWriteState();
+      serialize_size = memstream_get_last_size();
+      free(state_buf);
+   }
+
    emulating = 1;
 }
 
@@ -510,14 +516,22 @@ size_t retro_serialize_size(void)
 
 bool retro_serialize(void *data, size_t size)
 {
-   return 0;
-   //return CPUWriteState((uint8_t*)data, size);
+   if (size != retro_serialize_size())
+      return false;
+
+   memstream_set_buffer((uint8_t*)data, size);
+   CPUWriteState();
+   return true;
 }
 
 bool retro_unserialize(const void *data, size_t size)
 {
-   return 0;
-   //return CPUReadState((uint8_t*)data, size);
+   if (size != retro_serialize_size())
+      return false;
+
+   memstream_set_buffer((uint8_t*)data, size);
+   CPUReadState();
+   return true;
 }
 
 void retro_cheat_reset(void)
@@ -880,49 +894,42 @@ void systemSoundResume()
 
 // memstream helpers
 
-typedef struct {
-  void *address;
-  int size;
-} variable_desc;
-
-void utilWriteInt(gzFile gzFile, int i)
+void utilWriteIntMem(memstream_t *mem, int i)
 {
-//  utilGzWrite(gzFile, &i, sizeof(int));
+   memstream_putc(mem, i);
 }
 
-int utilReadInt(gzFile gzFile)
+int utilReadIntMem(memstream_t *mem)
 {
-  int i = 0;
-//  utilGzRead(gzFile, &i, sizeof(int));
-  return i;
+   return memstream_getc(mem);
 }
 
-void utilReadData(gzFile gzFile, variable_desc* data)
+int utilWriteMem(memstream_t *mem, const void *buffer, unsigned int len)
 {
-//  while(data->address) {
-//    utilGzRead(gzFile, data->address, data->size);
-//    data++;
-//  }
+   return memstream_write(mem, buffer, len);
 }
 
-void utilWriteData(gzFile gzFile, variable_desc *data)
+int utilReadMem(memstream_t *mem, void *buffer, unsigned int len)
 {
-//  while(data->address) {
-//    utilGzWrite(gzFile, data->address, data->size);
-//    data++;
-//  }
+   return memstream_read(mem, buffer, len);
 }
 
-int utilGzWrite(gzFile file, const voidp buffer, unsigned int len)
+void utilReadDataMem(memstream_t *mem, variable_desc *data)
 {
-   return 0;
-  //return utilGzWriteFunc(file, buffer, len);
+   while (data->address)
+   {
+      utilReadMem(mem, data->address, data->size);
+      data++;
+   }
 }
 
-int utilGzRead(gzFile file, voidp buffer, unsigned int len)
+void utilWriteDataMem(memstream_t *mem, variable_desc *data)
 {
-   return 0;
-  //return utilGzReadFunc(file, buffer, len);
+   while (data->address)
+   {
+      utilWriteMem(mem, data->address, data->size);
+      data++;
+   }
 }
 
 void utilUpdateSystemColorMaps()

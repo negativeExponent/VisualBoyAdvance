@@ -137,10 +137,6 @@ FILE *out = NULL;
 u32 lastTime = 0;
 int count = 0;
 
-int capture = 0;
-int capturePrevious = 0;
-int captureNumber = 0;
-
 const int TIMER_TICKS[4] = {
   0,
   6,
@@ -3462,13 +3458,6 @@ void CPULoop(int ticks)
               if((cheatsEnabled) && (mastercode==0))
                 remainingTicks += cheatsCheckKeys(P1^0x3FF, ext);
               speedup = (ext & 1) ? true : false;
-              capture = (ext & 2) ? true : false;
-              
-              if(capture && !capturePrevious) {
-                captureNumber++;
-                systemScreenCapture(captureNumber);
-              }
-              capturePrevious = capture;
 
               DISPSTAT |= 1;
               DISPSTAT &= 0xFFFD;
@@ -3483,8 +3472,6 @@ void CPULoop(int ticks)
                 frameCount = 0;
               } else 
                 frameCount++;
-              if(systemPauseOnFrame())
-                ticks = 0;
             }
             
             UPDATE_REG(0x04, DISPSTAT);

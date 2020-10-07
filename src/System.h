@@ -53,9 +53,6 @@ typedef signed long long s64;
 extern void logg(const char *,...);
 #define systemLog logg
 
-extern bool systemPauseOnFrame();
-extern void systemGbPrint(u8 *,int,int,int,int);
-extern void systemScreenCapture(int);
 extern void systemDrawScreen();
 // updates the joystick data
 extern bool systemReadJoypads();
@@ -63,14 +60,10 @@ extern bool systemReadJoypads();
 extern u32 systemReadJoypad(int);
 extern u32 systemGetClock();
 extern void systemMessage(int, const char *, ...);
-extern void systemSetTitle(const char *);
 extern void systemWriteDataToSoundBuffer();
-extern void systemSoundShutdown();
 extern void systemSoundPause();
 extern void systemSoundResume();
-extern void systemSoundReset();
 extern bool systemSoundInit();
-extern void systemScreenMessage(const char *);
 extern void systemUpdateMotionSensor();
 extern int  systemGetSensorX();
 extern int  systemGetSensorY();
@@ -78,12 +71,10 @@ extern bool systemCanChangeSoundQuality();
 extern void systemShowSpeed(int);
 extern void system10Frames(int);
 extern void systemFrame();
-extern void systemGbBorderOn();
 
 extern void Sm60FPS_Init();
 extern bool Sm60FPS_CanSkipFrame();
 extern void Sm60FPS_Sleep();
-extern void DbgMsg(const char *msg, ...);
 extern void winlog(const char *,...);
 
 extern bool systemSoundOn;

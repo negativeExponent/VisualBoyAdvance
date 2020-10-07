@@ -681,10 +681,6 @@ void systemWriteDataToSoundBuffer()
    g_audio_frames += audio.len;
 }
 
-void systemSoundReset(void)
-{
-}
-
 bool systemSoundInit(void)
 {
    int rates[] = { 44100, 22050, 11025, 44100 };
@@ -702,10 +698,6 @@ bool systemSoundInit(void)
 bool systemCanChangeSoundQuality(void)
 {
    return true;
-}
-
-void systemSoundShutdown(void)
-{
 }
 
 void systemDrawScreen(void)
@@ -843,20 +835,11 @@ u32 systemGetClock(void)
   return 0;
 }
 
-bool systemPauseOnFrame(void)
-{
-   return 0;
-}
-
 void system10Frames(int num)
 {
 }
 
 void systemShowSpeed(int num)
-{
-}
-
-void systemScreenCapture(int num)
 {
 }
 

@@ -1139,7 +1139,6 @@ void soundTick()
 
 void soundShutdown()
 {
-  systemSoundShutdown();
 }
 
 void soundPause()
@@ -1179,8 +1178,6 @@ int soundGetEnable()
 
 void soundReset()
 {
-  systemSoundReset();
-
   soundPaused = 1;
   soundPlay = 0;
   SOUND_CLOCK_TICKS = soundQuality * USE_TICKS_AS;  

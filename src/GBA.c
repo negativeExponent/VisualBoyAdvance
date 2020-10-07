@@ -97,15 +97,6 @@ u32 cpuPrefetch[2];
 
 int cpuTotalTicks = 0;
 
-#ifdef BKPT_SUPPORT
-u8 freezeWorkRAM[0x40000];
-u8 freezeInternalRAM[0x8000];
-u8 freezeVRAM[0x18000];
-u8 freezePRAM[0x400];
-u8 freezeOAM[0x400];
-bool debugger_last;
-#endif
-
 int lcdTicks = (DEF_USEBIOS && !DEF_SKIPBIOS) ? 1008 : 208;
 u8 timerOnOffDelay = 0;
 u16 timer0Value = 0;
@@ -1447,13 +1438,6 @@ void CPUSoftwareInterrupt1(int comment)
 {
   static bool disableMessage = false;
   if(armState) comment >>= 16;
-#ifdef BKPT_SUPPORT
-  if(comment == 0xff) {
-    extern void (*dbgOutput)(char *, u32);
-    dbgOutput(NULL, reg[0].I);
-    return;
-  }
-#endif
   if(comment == 0xfa) {
     agbPrintFlush();
     return;
@@ -2670,21 +2654,9 @@ void CPUWriteHalfWord(u32 address, u16 value)
   
   switch(address >> 24) {
   case 2:
-#ifdef BKPT_SUPPORT
-    if(*((u16 *)&freezeWorkRAM[address & 0x3FFFE]))
-      cheatsWriteHalfWord(address & 0x203FFFE,
-                          value);
-    else
-#endif
       WRITE16LE(((u16 *)&workRAM[address & 0x3FFFE]),value);
     break;
   case 3:
-#ifdef BKPT_SUPPORT
-    if(*((u16 *)&freezeInternalRAM[address & 0x7ffe]))
-      cheatsWriteHalfWord(address & 0x3007ffe,
-                          value);
-    else
-#endif
       WRITE16LE(((u16 *)&internalRAM[address & 0x7ffe]), value);
     break;    
   case 4:
@@ -2693,12 +2665,6 @@ void CPUWriteHalfWord(u32 address, u16 value)
     else goto unwritable;
     break;
   case 5:
-#ifdef BKPT_SUPPORT
-    if(*((u16 *)&freezePRAM[address & 0x03fe]))
-      cheatsWriteHalfWord(address & 0x70003fe,
-                          value);
-    else
-#endif
     WRITE16LE(((u16 *)&paletteRAM[address & 0x3fe]), value);
     break;
   case 6:
@@ -2707,21 +2673,9 @@ void CPUWriteHalfWord(u32 address, u16 value)
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
-#ifdef BKPT_SUPPORT
-    if(*((u16 *)&freezeVRAM[address]))
-      cheatsWriteHalfWord(address + 0x06000000,
-                          value);
-    else
-#endif
     WRITE16LE(((u16 *)&vram[address]), value); 
     break;
   case 7:
-#ifdef BKPT_SUPPORT
-    if(*((u16 *)&freezeOAM[address & 0x03fe]))
-      cheatsWriteHalfWord(address & 0x70003fe,
-                          value);
-    else
-#endif
     WRITE16LE(((u16 *)&oam[address & 0x3fe]), value);
     break;
   case 8:
@@ -2761,19 +2715,9 @@ void CPUWriteByte(u32 address, u8 b)
 {
   switch(address >> 24) {
   case 2:
-#ifdef BKPT_SUPPORT
-      if(freezeWorkRAM[address & 0x3FFFF])
-        cheatsWriteByte(address & 0x203FFFF, b);
-      else
-#endif  
         workRAM[address & 0x3FFFF] = b;
     break;
   case 3:
-#ifdef BKPT_SUPPORT
-    if(freezeInternalRAM[address & 0x7fff])
-      cheatsWriteByte(address & 0x3007fff, b);
-    else
-#endif
       internalRAM[address & 0x7fff] = b;
     break;
   case 4:
@@ -2856,11 +2800,6 @@ void CPUWriteByte(u32 address, u8 b)
     // byte writes to OBJ VRAM are ignored
     if ((address) < objTilesAddress[((DISPCNT&7)+1)>>2])
     {
-#ifdef BKPT_SUPPORT
-      if(freezeVRAM[address])
-        cheatsWriteByte(address + 0x06000000, b);
-      else
-#endif  
             *((u16 *)&vram[address]) = (b << 8) | b;
     }
     break;
@@ -3361,16 +3300,6 @@ void CPULoop(int ticks)
     if(systemDebug) {
       if(systemDebug >= 10 && !holdState) {
         CPUUpdateCPSR();
-#ifdef BKPT_SUPPORT
-		if (debugger_last)
-		{
-		sprintf(buffer, "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
-                 oldreg[0], oldreg[1], oldreg[2], oldreg[3], oldreg[4], oldreg[5],
-                 oldreg[6], oldreg[7], oldreg[8], oldreg[9], oldreg[10], oldreg[11],
-                 oldreg[12], oldreg[13], oldreg[14], oldreg[15], oldreg[16],
-                 oldreg[17]);
-		}
-#endif
         sprintf(buffer, "R00=%08x R01=%08x R02=%08x R03=%08x R04=%08x R05=%08x R06=%08x R07=%08x R08=%08x R09=%08x R10=%08x R11=%08x R12=%08x R13=%08x R14=%08x R15=%08x R16=%08x R17=%08x\n",
                  reg[0].I, reg[1].I, reg[2].I, reg[3].I, reg[4].I, reg[5].I,
                  reg[6].I, reg[7].I, reg[8].I, reg[9].I, reg[10].I, reg[11].I,

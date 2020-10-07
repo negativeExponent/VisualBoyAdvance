@@ -17,15 +17,7 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#ifdef BKPT_SUPPORT
-#define CONSOLE_OUTPUT(a,b) \
-    extern void (*dbgOutput)(char *, u32);\
-    if((opcode == 0xe0000000) && (reg[0].I == 0xC0DED00D)) {\
-      dbgOutput((a), (b));\
-    }
-#else
 #define CONSOLE_OUTPUT(a,b)
-#endif
 
 #define OP_AND \
       reg[dest].I = reg[(opcode>>16)&15].I & value;\
@@ -3059,17 +3051,6 @@ if(cond_res) {
     LOGICAL_DATA_OPCODE             (OP_BICS, OP_BIC, 0x1d0);
     LOGICAL_DATA_OPCODE_WITHOUT_base(OP_MVN,  OP_MVN, 0x1e0);
     LOGICAL_DATA_OPCODE_WITHOUT_base(OP_MVNS, OP_MVN, 0x1f0);
-#ifdef BKPT_SUPPORT
-  case 0x127:
-  case 0x7ff: // for GDB support
-    {
-    extern void (*dbgSignal)(int,int);
-    reg[15].I -= 4;
-    armNextPC -= 4;
-    dbgSignal(5, (opcode & 0x0f)|((opcode>>4) & 0xfff0));
-    return;
-    }
-#endif
   case 0x320:
   case 0x321:
   case 0x322:

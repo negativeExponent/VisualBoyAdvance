@@ -2821,73 +2821,16 @@ extern void debuggerBreakOnWrite(u32 , u32, u32, int, int);
 
 static u8 cheatsGetType(u32 address)
 {
-#ifdef BKPT_SUPPORT
-  switch(address >> 24) {
-  case 2:
-    return freezeWorkRAM[address & 0x3FFFF];
-  case 3:
-    return freezeInternalRAM[address & 0x7FFF];
-  case 5:
-    return freezePRAM[address & 0x3FC];
-  case 6:
-    if (address > 0x06010000)
-      return freezeVRAM[address & 0x17FFF];
-    else
-      return freezeVRAM[address & 0x1FFFF];
-  case 7:
-    return freezeOAM[address & 0x3FC];
-  }
-  return 0;
-#endif
 }
 
 void cheatsWriteMemory(u32 address, u32 value)
 {
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-  if(cheatsNumber == 0) {
-    int type = cheatsGetType(address);
-    u32 oldValue = debuggerReadMemory(address);
-    if(type == 1 || (type == 2 && oldValue != value)) {
-      debuggerBreakOnWrite(address, oldValue, value, 2, type);
-      cpuNextEvent = 0;
-    }
-    debuggerWriteMemory(address, value);
-  }
-#endif
-#endif
 }
 
 void cheatsWriteHalfWord(u32 address, u16 value)
 {
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-  if(cheatsNumber == 0) {
-    int type = cheatsGetType(address);
-    u16 oldValue = debuggerReadHalfWord(address);
-    if(type == 1 || (type == 2 && oldValue != value)) {
-      debuggerBreakOnWrite(address, oldValue, value, 1, type);
-      cpuNextEvent = 0;
-    }
-    debuggerWriteHalfWord(address, value);
-  }
-#endif
-#endif
 }
 
 void cheatsWriteByte(u32 address, u8 value)
 {
-#ifdef BKPT_SUPPORT
-#ifdef SDL
-  if(cheatsNumber == 0) {
-    int type = cheatsGetType(address);
-    u8 oldValue = debuggerReadByte(address);
-    if(type == 1 || (type == 2 && oldValue != value)) {
-      debuggerBreakOnWrite(address, oldValue, value, 0, type);
-      cpuNextEvent = 0;
-    }
-    debuggerWriteByte(address, value);
-  }
-#endif
-#endif
 }

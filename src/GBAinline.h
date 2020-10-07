@@ -386,21 +386,9 @@ static inline void CPUWriteMemory(u32 address, u32 value)
   
   switch(address >> 24) {
   case 0x02:
-#ifdef BKPT_SUPPORT
-    if(*((u32 *)&freezeWorkRAM[address & 0x3FFFC]))
-      cheatsWriteMemory(address & 0x203FFFC,
-                        value);
-    else
-#endif
       WRITE32LE(((u32 *)&workRAM[address & 0x3FFFC]), value);
     break;
   case 0x03:
-#ifdef BKPT_SUPPORT
-    if(*((u32 *)&freezeInternalRAM[address & 0x7ffc]))
-      cheatsWriteMemory(address & 0x3007FFC,
-                        value);
-    else
-#endif
       WRITE32LE(((u32 *)&internalRAM[address & 0x7ffC]), value);
     break;
   case 0x04:
@@ -410,12 +398,6 @@ static inline void CPUWriteMemory(u32 address, u32 value)
     } else goto unwritable;
     break;
   case 0x05:
-#ifdef BKPT_SUPPORT
-    if(*((u32 *)&freezePRAM[address & 0x3fc]))
-      cheatsWriteMemory(address & 0x70003FC,
-                        value);
-    else
-#endif
     WRITE32LE(((u32 *)&paletteRAM[address & 0x3FC]), value);
     break;
   case 0x06:
@@ -424,22 +406,9 @@ static inline void CPUWriteMemory(u32 address, u32 value)
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
-
-#ifdef BKPT_SUPPORT
-    if(*((u32 *)&freezeVRAM[address]))
-      cheatsWriteMemory(address + 0x06000000, value);
-    else
-#endif
-    
     WRITE32LE(((u32 *)&vram[address]), value);
     break;
   case 0x07:
-#ifdef BKPT_SUPPORT
-    if(*((u32 *)&freezeOAM[address & 0x3fc]))
-      cheatsWriteMemory(address & 0x70003FC,
-                        value);
-    else
-#endif
     WRITE32LE(((u32 *)&oam[address & 0x3fc]), value);
     break;
   case 0x0D:

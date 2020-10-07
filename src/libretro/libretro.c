@@ -28,23 +28,6 @@ extern bool soundReverse;
 extern void CPUUpdateRenderBuffers(bool);
 extern int gbHardware;
 
-struct EmulatedSystem emulator = {
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  false,
-  0
-};
-
 int systemRedShift = 0;
 int systemBlueShift = 0;
 int systemGreenShift = 0;

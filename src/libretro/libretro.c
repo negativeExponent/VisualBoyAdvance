@@ -119,15 +119,12 @@ void retro_set_environment(retro_environment_t cb)
 
 void retro_get_system_info(struct retro_system_info *info)
 {
-#ifdef GEKKO
-   info->need_fullpath = true;
-#else
-   info->need_fullpath = false;
-#endif
-   info->valid_extensions = "gba";
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
+
+   info->need_fullpath = false;
+   info->valid_extensions = "gba";
    info->library_version = "v1.8.0" GIT_VERSION;
    info->library_name = "VisualBoyAdvance";
    info->block_extract = false;
@@ -640,7 +637,7 @@ bool retro_load_game(const struct retro_game_info *game)
 
    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-	rom_size = CPULoadRom(game->path);
+	rom_size = CPULoadRom(game->data, game->size);
 
    if (!rom_size)
    {

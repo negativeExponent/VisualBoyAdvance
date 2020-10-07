@@ -98,7 +98,7 @@ extern bool CPUReadMemState(char *, int);
 extern bool CPUReadState(const void *);
 extern bool CPUWriteMemState(char *, int);
 extern bool CPUWriteState(void *);
-extern int CPULoadRom(const char *);
+extern int CPULoadRom(const char *, u32);
 extern void doMirroring(bool);
 extern void CPUUpdateRegister(u32, u16);
 extern void applyTimer ();

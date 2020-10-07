@@ -1047,9 +1047,8 @@ void CPUCleanUp()
   emulating = 0;
 }
 
-int CPULoadRom(const char *szFile)
+int CPULoadRom(const char *data, u32 size)
 {
-  romSize = 0x2000000;
   if(rom != NULL) {
     CPUCleanUp();
   }
@@ -1073,16 +1072,8 @@ int CPULoadRom(const char *szFile)
   if(cpuIsMultiBoot)
     whereToLoad = workRAM;
 
-  if(!utilLoad(szFile,
-                      NULL,
-                      whereToLoad,
-                      &romSize)) {
-    free(rom);
-    rom = NULL;
-    free(workRAM);
-    workRAM = NULL;
-    return 0;
-  }
+  romSize = size;
+  memcpy(whereToLoad, data, romSize);
 
   u16 *temp = (u16 *)(rom+((romSize+1)&~1));
   int i;

@@ -36,7 +36,6 @@
 #include "elf.h"
 #include "Util.h"
 #include "Port.h"
-#include "agbprint.h"
 #ifdef PROFILING
 #include "prof/prof.h"
 #endif

@@ -48,9 +48,9 @@ bool systemSoundOn = false;
 
 struct AUDIO_INFO
 {
-   int rate;
-   int len;
-   int16_t *data;
+   double rate;
+   size_t len;
+   void *data;
 } audio;
 
 u8 libretro_save_buf[(128 + 8) * 1024];
@@ -133,7 +133,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    info->geometry.max_height = 160;
    info->geometry.aspect_ratio = 3.0 / 2.0;
    info->timing.fps = 16777216.0 / 280896.0;
-   info->timing.sample_rate = (double)audio.rate;
+   info->timing.sample_rate = audio.rate;
 }
 
 static void check_system_specs(void)
@@ -683,10 +683,10 @@ void systemWriteDataToSoundBuffer()
 
 bool systemSoundInit(void)
 {
-   int rates[] = { 44100, 22050, 11025, 44100 };
+   double rates[] = { 44100.0, 22050.0, 11025.0, 44100.0 };
 
    audio.rate = rates[(soundQuality >> 1) & 3];
-   audio.len = (int)((double)audio.rate / (16777216.0 / 280896.0));
+   audio.len = (size_t)(audio.rate / (16777216.0 / 280896.0));
    audio.data = (int16_t*)soundFinalWave;
 
    soundBufferLen = (audio.len << 2);

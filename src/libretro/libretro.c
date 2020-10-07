@@ -46,6 +46,14 @@ u16 systemColorMap16[0x10000];
 char biosFileName[2048];
 bool systemSoundOn = false;
 
+#ifdef _WIN32
+#define PATH_DEFAULT_SLASH() "\\"
+#define PATH_DEFAULT_SLASH_C() '\\'
+#else
+#define PATH_DEFAULT_SLASH() "/"
+#define PATH_DEFAULT_SLASH_C() '/'
+#endif
+
 struct AUDIO_INFO
 {
    double rate;
@@ -145,17 +153,17 @@ static void check_system_specs(void)
 void retro_init(void)
 {
    struct retro_log_callback log;
+   const char* dir = NULL;
+   const char *biosfile = "gba_bios.bin";
+
    environ_cb(RETRO_ENVIRONMENT_GET_CAN_DUPE, &can_dupe);
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
       log_cb = log.log;
    else
       log_cb = NULL;
 
-   const char* dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir) {
-      strncpy(filename_bios, dir, sizeof(filename_bios));
-      strncat(filename_bios, "/gba_bios.bin", sizeof(filename_bios));
-   }
+   if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir)
+      sprintf(filename_bios, "%s%c%s", dir, PATH_DEFAULT_SLASH_C(), biosfile);
 
 #ifdef FRONTEND_SUPPORTS_RGB565
    enum retro_pixel_format rgb565 = RETRO_PIXEL_FORMAT_RGB565;

@@ -120,7 +120,6 @@ extern void winlog(const char *,...);
 extern bool systemSoundOn;
 extern u16 systemColorMap16[0x10000];
 extern u32 systemColorMap32[0x10000];
-extern u16 systemGbPalette[24];
 extern int systemRedShift;
 extern int systemGreenShift;
 extern int systemBlueShift;
@@ -129,7 +128,6 @@ extern int systemDebug;
 extern int systemVerbose;
 extern int systemFrameSkip;
 extern int systemSaveUpdateCounter;
-extern int systemSpeed;
 
 #define SYSTEM_SAVE_UPDATED 30
 #define SYSTEM_SAVE_NOT_UPDATED 0

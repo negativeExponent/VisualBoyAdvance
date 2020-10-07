@@ -24,51 +24,6 @@ char filename_bios[0x100] = {0};
 extern bool soundEcho;
 extern bool soundLowPass;
 extern bool soundReverse;
-extern int Init_2xSaI(u32);
-extern void _2xSaI(u8*,u32,u8*,u8*,u32,int,int);
-extern void _2xSaI32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Super2xSaI(u8*,u32,u8*,u8*,u32,int,int);
-extern void Super2xSaI32(u8*,u32,u8*,u8*,u32,int,int);
-extern void SuperEagle(u8*,u32,u8*,u8*,u32,int,int);
-extern void SuperEagle32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Pixelate(u8*,u32,u8*,u8*,u32,int,int);
-extern void Pixelate32(u8*,u32,u8*,u8*,u32,int,int);
-extern void MotionBlur(u8*,u32,u8*,u8*,u32,int,int);
-extern void MotionBlur32(u8*,u32,u8*,u8*,u32,int,int);
-extern void AdMame2x(u8*,u32,u8*,u8*,u32,int,int);
-extern void AdMame2x32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Simple2x(u8*,u32,u8*,u8*,u32,int,int);
-extern void Simple2x32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Bilinear(u8*,u32,u8*,u8*,u32,int,int);
-extern void Bilinear32(u8*,u32,u8*,u8*,u32,int,int);
-extern void BilinearPlus(u8*,u32,u8*,u8*,u32,int,int);
-extern void BilinearPlus32(u8*,u32,u8*,u8*,u32,int,int);
-extern void Scanlines(u8*,u32,u8*,u8*,u32,int,int);
-extern void Scanlines32(u8*,u32,u8*,u8*,u32,int,int);
-extern void ScanlinesTV(u8*,u32,u8*,u8*,u32,int,int);
-extern void ScanlinesTV32(u8*,u32,u8*,u8*,u32,int,int);
-extern void hq2x(u8*,u32,u8*,u8*,u32,int,int);
-extern void hq2x32(u8*,u32,u8*,u8*,u32,int,int);
-extern void lq2x(u8*,u32,u8*,u8*,u32,int,int);
-extern void lq2x32(u8*,u32,u8*,u8*,u32,int,int);
-
-extern void SmartIB(u8*,u32,int,int);
-extern void SmartIB32(u8*,u32,int,int);
-extern void MotionBlurIB(u8*,u32,int,int);
-extern void MotionBlurIB32(u8*,u32,int,int);
-
-//void Init_Overlay(SDL_Surface *surface, int overlaytype);
-void Quit_Overlay(void);
-//static void Draw_Overlay(SDL_Surface *surface, int size);
-
-extern void remoteInit();
-extern void remoteCleanUp();
-extern void remoteStubMain();
-extern void remoteStubSignal(int,int);
-extern void remoteOutput(char *, u32);
-extern void remoteSetProtocol(int);
-extern void remoteSetPort(int);
-extern void debuggerOutput(char *, u32);
 
 extern void CPUUpdateRenderBuffers(bool);
 extern int gbHardware;
@@ -90,11 +45,6 @@ struct EmulatedSystem emulator = {
   0
 };
 
-//SDL_Surface *surface = NULL;
-//SDL_Overlay *overlay = NULL;
-//SDL_Rect overlay_rect;
-
-int systemSpeed = 0;
 int systemRedShift = 0;
 int systemBlueShift = 0;
 int systemGreenShift = 0;
@@ -104,42 +54,13 @@ int systemVerbose = 0;
 int systemFrameSkip = 0;
 int systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
-int srcPitch = 0;
-int srcWidth = 0;
-int srcHeight = 0;
-int destWidth = 0;
-int destHeight = 0;
-
 int sensorX = 2047;
 int sensorY = 2047;
 
-int filter = 0;
-u8 *delta = NULL;
-
-int sdlPrintUsage = 0;
-int disableMMX = 0;
-
-int cartridgeType = 3;
-int sizeOption = 0;
-int captureFormat = 0;
-
-int pauseWhenInactive = 0;
-int active = 1;
 int emulating = 0;
-int RGB_LOW_BITS_MASK=0x821;
 u32 systemColorMap32[0x10000];
 u16 systemColorMap16[0x10000];
-u16 systemGbPalette[24];
-void (*filterFunction)(u8*,u32,u8*,u8*,u32,int,int) = NULL;
-void (*ifbFunction)(u8*,u32,int,int) = NULL;
-int ifbType = 0;
-char filename[2048];
-char ipsname[2048];
 char biosFileName[2048];
-char captureDir[2048];
-char saveDir[2048];
-char batteryDir[2048];
-
 bool systemSoundOn = false;
 
 struct AUDIO_INFO
